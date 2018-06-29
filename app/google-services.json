@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "720434386762",
+    "firebase_url": "https://whatsmygst.firebaseio.com",
+    "project_id": "whatsmygst",
+    "storage_bucket": "whatsmygst.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:720434386762:android:66b82a3b6015abbd",
+        "android_client_info": {
+          "package_name": "com.pukingminion.whatsmygst"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "720434386762-d5phvaip4srbb6bmobjt4cu1j3cg5ld4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfhhkQLUCl7Zhv9DlsEedRrIrmwkYDpH8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
