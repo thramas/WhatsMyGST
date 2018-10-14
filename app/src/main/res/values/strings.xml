@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">WhatsMyGST</string>
+    <string name="app_name">GST Scanner</string>
     <string name="gst_rate_text">The GST rate for this item is approximately %1$s</string>
 </resources>
