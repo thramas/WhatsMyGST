@@ -17,14 +17,13 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CompoundButton;
@@ -61,8 +60,10 @@ public final class MainActivity extends AppCompatActivity
     private GraphicOverlay graphicOverlay;
     private String selectedModel = IMAGE_LABEL_DETECTION;
     private TextView gstTv;
+    private TextView gstTv2;
     private HashMap<String, GSTItem> gstMap = new HashMap<>();
     private TextView itemTv;
+    private TextView itemTv2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,8 @@ public final class MainActivity extends AppCompatActivity
         preview = (CameraSourcePreview) findViewById(R.id.firePreview);
         gstTv = (TextView) findViewById(R.id.gst_tv);
         itemTv = (TextView) findViewById(R.id.item_tv);
+        gstTv2 = (TextView) findViewById(R.id.gst_tv_2);
+        itemTv2 = (TextView) findViewById(R.id.item_tv_2);
         if (preview == null) {
             Log.d(TAG, "Preview is null");
         }
@@ -152,8 +155,8 @@ public final class MainActivity extends AppCompatActivity
                 Log.i(TAG, "Using Image Label Detector Processor");
                 cameraSource.setMachineLearningFrameProcessor(new ImageLabelingProcessor(new OnClassifiedListener() {
                     @Override
-                    public void onImageClassified(FirebaseVisionLabel label) {
-                        setTextValue(label.getLabel());
+                    public void onImageClassified(@NonNull List<FirebaseVisionLabel> label) {
+                        setTextValue(label, 0, 0);
                     }
                 }));
                 break;
@@ -162,31 +165,83 @@ public final class MainActivity extends AppCompatActivity
         }
     }
 
-    private void setTextValue(String label) {
-        Log.d("mygsttag", label);
-        fetchGSTForItem(label, new BasicCallback() {
+    private void setSecondaryTextValue(final List<FirebaseVisionLabel> label) {
+        final String secondLabel = label.get(1).getLabel();
+        fetchGSTForItem(secondLabel, new BasicCallback() {
             @Override
             public void onSuccess(GSTItem item) {
-                String itemText = "Item Category: Unknown";
-                String gstText = "Item not found in database. Our has been notified.";
+                String itemText = "Category: Unknown";
+                String gstText = "Item not found in database";
                 if (item != null) {
-                    Log.d("mygsttag", "Item found!");
-                    Log.d("mygsttag", item.getDesc());
-                    itemText = "Item Category: " + item.getDesc();
+                    itemText = "Second Prediction: " + secondLabel;
                     gstText = "CGST:" + item.getCgst()
                             + "% SGST:" + item.getSgst()
                             + "% IGST:" + item.getIgst() + "%";
-                }
-                if (gstTv != null) {
-                    gstTv.setText(gstText);
-                }
-                if (itemTv != null) {
-                    itemTv.setText(itemText);
+                    if (gstTv2 != null) {
+                        gstTv2.setText(gstText);
+                        gstTv2.setVisibility(View.VISIBLE);
+                    }
+                    if (itemTv2 != null) {
+                        itemTv2.setText(itemText);
+                        itemTv2.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    if (gstTv2 != null) {
+                        gstTv2.setVisibility(View.GONE);
+                    }
+                    if (itemTv2 != null) {
+                        itemTv2.setVisibility(View.GONE);
+                    }
                 }
             }
         });
     }
 
+    private void setTextValue(final List<FirebaseVisionLabel> label, final int index, final int itemCount) {
+        if (index > 1) {
+            return;
+        }
+        final String labelStr = label.get(index).getLabel();
+        fetchGSTForItem(labelStr, new BasicCallback() {
+            @Override
+            public void onSuccess(GSTItem item) {
+                String itemText;
+                String gstText;
+                TextView gstTvSample = itemCount > 0 ? gstTv2 : gstTv;
+                TextView itemTvSample = itemCount > 0 ? itemTv2 : itemTv;
+                if (item != null) {
+                    String prefix = itemCount > 0 ? "Second Prediction : " : "First Prediction : ";
+                    itemText = prefix + labelStr;
+                    gstText = "CGST:" + item.getCgst()
+                            + "% SGST:" + item.getSgst()
+                            + "% IGST:" + item.getIgst() + "%";
+                    if (gstTvSample != null) {
+                        gstTvSample.setText(gstText);
+                        gstTvSample.setVisibility(View.VISIBLE);
+                    }
+                    if (itemTvSample != null) {
+                        itemTvSample.setText(itemText);
+                        itemTvSample.setVisibility(View.VISIBLE);
+                    }
+                    if (label.size() > 1) {
+                        setTextValue(label, index + 1, itemCount + 1);
+                    }
+                } else {
+                    if (gstTvSample != null) {
+                        gstTvSample.setVisibility(View.GONE);
+                    }
+                    if (itemTvSample != null) {
+                        itemTvSample.setVisibility(View.GONE);
+                    }
+                    if (label.size() > 1) {
+                        setTextValue(label, index + 1, itemCount);
+                    }
+                }
+            }
+        });
+    }
+
+    //todo This method needs improvement, a lot of improvement.
     private void fetchGSTForItem(String label, BasicCallback callback) {
         if (label.contains(" ")) {
             label = label.substring(label.lastIndexOf(" ") + 1);

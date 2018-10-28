@@ -64,10 +64,10 @@ public class ImageLabelingProcessor extends VisionProcessorBase<List<FirebaseVis
         graphicOverlay.clear();
 
         LabelGraphic labelGraphic = new LabelGraphic(graphicOverlay, labels);
-        graphicOverlay.add(labelGraphic);
+//        graphicOverlay.add(labelGraphic);
 
         if (onClassifiedListener != null && labels.size() > 0) {
-            onClassifiedListener.onImageClassified(labels.get(0));
+            onClassifiedListener.onImageClassified(labels);
         }
     }
 
